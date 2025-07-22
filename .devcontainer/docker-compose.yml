@@ -1,0 +1,13 @@
+services:
+  chroma:
+    image: chromadb/chroma
+    volumes:
+      - ./.chroma/data:/data
+
+  devcontainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ..:/workspaces/fmi-chroma
+    command: sleep infinity

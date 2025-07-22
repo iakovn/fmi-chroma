@@ -1,0 +1,18 @@
+{
+  "theme": "Default",
+  "selectedAuthType": "gemini-api-key",
+  "preferredEditor": "vscode",
+  "mcpServers": {
+    "fmi_chroma_server": {
+      "command": "/workspaces/fmi-chroma/.venv/bin/python",
+      "args": [
+        "-m",
+        "fmi_chroma.run_mcp"
+      ],
+      "env": {
+        "ANONYMIZED_TELEMETRY": "False"
+      },
+      "trust": true
+    }
+  }
+}

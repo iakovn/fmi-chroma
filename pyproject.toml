@@ -5,17 +5,27 @@ description = "This repo is used to create a docker image with Chroma database o
 authors = [{ name = "Iakov Nakhimovski", email = "iakov.nakhimovski@gmail.com" }]
 readme = "README.md"
 keywords = ['python']
-requires-python = ">=3.9,<4.0"
+requires-python = ">=3.11,<3.13"
 classifiers = [
     "Intended Audience :: Developers",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "chromadb>=0.5.3",
+    "langchain-chroma>=0.2.4",
+    "langchain-community>=0.3.27",
+    "langchain-google-genai>=2.1.8",
+    "pysqlite3-binary>=0.5.4",
+    "numpy < 2.0",
+    "pypdf>=5.8.0",
+    "jupytext>=1.17.2",
+    "mcp[cli,server]>=1.12.0",
+    "pypdf2>=3.0.1",
 ]
 
 [project.urls]
@@ -35,6 +45,12 @@ dev = [
     "mkdocs>=1.4.2",
     "mkdocs-material>=8.5.10",
     "mkdocstrings[python]>=0.26.1",
+    "ipykernel>=6.24.0",
+    "jupytext>=0.9.0",
+    "chroma-mcp >=0.1.0",
+    "langchain_community",
+    "langchain_google_genai",
+    "langchain_chroma"
 ]
 
 [build-system]
@@ -58,8 +74,8 @@ show_error_codes = true
 testpaths = ["tests"]
 
 [tool.ruff]
-target-version = "py39"
-line-length = 120
+target-version = "py311"
+line-length = 80
 fix = true
 
 [tool.ruff.lint]

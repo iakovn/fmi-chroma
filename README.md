@@ -11,19 +11,13 @@ This repo is used to create a docker image with Chroma database of FMI related d
 - **Github repository**: <https://github.com/iakovn/fmi-chroma/>
 - **Documentation** <https://iakovn.github.io/fmi-chroma/>
 
-## Getting started with your project
+## Development
 
-### 1. Create a New Repository
+### 1. Setup devenv
 
-First, create a repository on GitHub with the same name as this project, and then run the following commands:
-
-```bash
-git init -b main
-git add .
-git commit -m "init commit"
-git remote add origin git@github.com:iakovn/fmi-chroma.git
-git push -u origin main
-```
+The devenv utilized devcontainer, i.e., you need to have podman or docker install.
+It's based on template: https://github.com/fpgmaas/cookiecutter-uv.git
+Follow the steps below in the running container.
 
 ### 2. Set Up Your Development Environment
 
@@ -33,7 +27,7 @@ Then, install the environment and the pre-commit hooks with
 make install
 ```
 
-This will also generate your `uv.lock` file
+This will also (re)generate your `uv.lock` file
 
 ### 3. Run the pre-commit hooks
 

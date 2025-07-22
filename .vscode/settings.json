@@ -1,0 +1,11 @@
+{
+  "[python]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit"
+    },
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true
+  },
+  "chat.mcp.discovery.enabled": true,
+  "github.copilot.chat.codesearch.enabled": true
+}

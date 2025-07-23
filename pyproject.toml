@@ -29,6 +29,7 @@ dependencies = [
     "ompython>=3.6.0",
     "fmpy>=0.3.22",
     "matplotlib>=3.10.3",
+    "nbconvert>=7.16.6",
 ]
 
 [project.urls]

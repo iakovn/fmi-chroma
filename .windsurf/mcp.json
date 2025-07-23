@@ -1,0 +1,15 @@
+{
+  "servers": {
+    "FMI Chroma": {
+      "type": "stdio",
+      "command": "/workspaces/fmi-chroma/.venv/bin/python",
+      "args": [
+        "-m",
+        "fmi_chroma.run_mcp"
+      ],
+      "env": {
+        "ANONYMIZED_TELEMETRY": "False"
+      }
+    }
+  }
+}

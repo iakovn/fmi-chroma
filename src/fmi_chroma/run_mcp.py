@@ -19,7 +19,7 @@ if __name__ == "__main__":
         "--ssl",
         "false",
     ]
-    from chroma_mcp import main
+    from chroma_mcp import main  # type: ignore[import]
 
     sys.exit(main())
 

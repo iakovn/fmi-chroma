@@ -7,6 +7,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 __import__("pysqlite3")
 sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
 
+
 import chromadb  # noqa: E402
 
 
@@ -15,7 +16,7 @@ def add_texts_from_directory(
     collection_name: str,
     chunk_size: int = 500,
     chunk_overlap: int = 50,
-):
+) -> None:
     # Initialize Chroma HTTP client
     client = chromadb.HttpClient(host="chroma", port=8000)
 
@@ -50,8 +51,8 @@ def add_texts_from_directory(
                     for i, _chunk in enumerate(chunks):
                         chunk_ids.append(f"{file_id_base}_chunk_{i}")
                         chunk_metadatas.append({
-                            "filename": filename,
-                            "chunk_index": i,
+                            "filename": str(filename),
+                            "chunk_index": int(i),
                         })
                     if chunks:
                         collection.add(

@@ -6,7 +6,7 @@ import subprocess
 from fmi_chroma.text2chroma import add_texts_from_directory
 
 
-def clone_repo(repo_url, tag, dest_dir):
+def clone_repo(repo_url: str, tag: str, dest_dir: str) -> None:
     """
     Clones a specific tag from a git repository with depth 1.
 
@@ -40,7 +40,7 @@ def clone_repo(repo_url, tag, dest_dir):
         raise
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Clone a git repository and add its text files to a Chroma collection."
     )

@@ -5,7 +5,7 @@ sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
 import chromadb  # noqa: E402
 
 
-def list_collections():
+def list_collections() -> None:
     """Lists all collections in the Chroma database."""
     client = chromadb.HttpClient(host="chroma", port=8000)
     collections = client.list_collections()

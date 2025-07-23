@@ -22,6 +22,7 @@ def clone_repo(repo_url, tag, dest_dir):
     command = [
         "git",
         "clone",
+        "--single-branch",
         "--depth",
         "1",
         "--branch",

@@ -1,5 +1,4 @@
 import argparse
-import glob
 import os
 import sys
 
@@ -28,43 +27,49 @@ def add_texts_from_directory(
         chunk_size=chunk_size, chunk_overlap=chunk_overlap
     )
 
-    # Define the file extensions to search for
-    extensions = ["md", "txt", "adoc", "c", "h"]
-
-    all_chunks = []
-    all_ids = []
-    all_metadatas = []
+    # Define the file extensions to search for (lowercase for matching)
+    extensions = ["md", "txt", "adoc", "c", "h", "rst", "py"]
+    extensions_set = {ext.lower() for ext in extensions}
 
     file_count = 0
+    chunk_count = 0
 
-    # Recursively search for files with the specified extensions
-    for extension in extensions:
-        # Search for both lowercase and uppercase extensions
-        for filepath in glob.glob(
-            os.path.join(directory_path, f"**/*.{extension}"), recursive=True
-        ):
-            file_count += 1
-            with open(filepath, encoding="utf-8", errors="ignore") as file:
-                full_text = file.read()
-                chunks = text_splitter.split_text(full_text)
-                file_id_base = os.path.abspath(filepath)
+    # Walk the directory tree once
+    for root, _, files in os.walk(directory_path):
+        for filename in files:
+            ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+            if ext in extensions_set:
+                filepath = os.path.join(root, filename)
+                file_count += 1
+                with open(filepath, encoding="utf-8", errors="ignore") as file:
+                    full_text = file.read()
+                    chunks = text_splitter.split_text(full_text)
+                    file_id_base = os.path.abspath(filepath)
+                    chunk_ids = []
+                    chunk_metadatas = []
+                    for i, _chunk in enumerate(chunks):
+                        chunk_ids.append(f"{file_id_base}_chunk_{i}")
+                        chunk_metadatas.append({
+                            "filename": filename,
+                            "chunk_index": i,
+                        })
+                    if chunks:
+                        collection.add(
+                            documents=chunks,
+                            ids=chunk_ids,
+                            metadatas=chunk_metadatas,
+                        )
+                        chunk_count += len(chunks)
+                        print(
+                            f"Added {len(chunks)} chunks from {filename} to collection '{collection_name}'."
+                        )
 
-                for i, chunk in enumerate(chunks):
-                    all_chunks.append(chunk)
-                    all_ids.append(f"{file_id_base}_chunk_{i}")
-                    all_metadatas.append({
-                        "filename": os.path.basename(filepath),
-                        "chunk_index": i,
-                    })
-
-    if not all_chunks:
+    if file_count == 0:
         print("No text files found in the specified directory.")
-        return
-
-    collection.add(documents=all_chunks, ids=all_ids, metadatas=all_metadatas)
-    print(
-        f"Added {len(all_chunks)} chunks from {file_count} files to collection '{collection_name}'."
-    )
+    else:
+        print(
+            f"Added total {chunk_count} chunks from {file_count} files to collection '{collection_name}'."
+        )
 
 
 if __name__ == "__main__":

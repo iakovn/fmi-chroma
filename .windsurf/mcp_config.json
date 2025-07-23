@@ -1,7 +1,6 @@
 {
-  "servers": {
+  "mcpServers": {
     "FMI Chroma": {
-      "type": "stdio",
       "command": "/workspaces/fmi-chroma/.venv/bin/python",
       "args": [
         "-m",
@@ -10,6 +9,14 @@
       "env": {
         "ANONYMIZED_TELEMETRY": "False"
       }
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "env": {}
     }
   }
 }

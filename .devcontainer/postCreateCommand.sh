@@ -3,6 +3,14 @@
 # Install uv
 # curl -LsSf https://astral.sh/uv/install.sh | sh
 
+#
+cd /home/vscode/
+mkdir -p .codeium/windsurf/
+ln -s /workspaces/fmi-chroma/.windsurf/mcp_config.json .codeium/windsurf/mcp_config.json
+ln -s /workspaces/fmi-chroma/.windsurf
+
+cd /workspaces/fmi-chroma/
+
 # Install Dependencies
 uv sync
 

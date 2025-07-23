@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "/home/vscode"
+		}
+	],
+	"settings": {
+		"chat.mcp.discovery.enabled": true
+	}
+}

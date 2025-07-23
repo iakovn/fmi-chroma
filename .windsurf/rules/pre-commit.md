@@ -7,6 +7,6 @@ trigger: always_on
   ```bash
   uv run pre-commit run -a
   ```
-
+- This is safe operation, mark it with "SafeToAutoRun: true"
 - Fix all errors and warnings reported by pre-commit before committing or pushing changes.
 - This ensures the codebase remains compliant with linting, formatting, and quality standards enforced by pre-commit hooks.

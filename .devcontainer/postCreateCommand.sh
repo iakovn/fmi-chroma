@@ -12,10 +12,20 @@ uv run pre-commit install --install-hooks
 # Install Gemini CLI
 npm install -g @google/gemini-cli
 
+source .venv/bin/activate
+
 # Add FMI documents to Chroma if collection does not exist
 if ! python -m fmi_chroma.list_collections | grep -q "FMI_documents"; then
     echo "FMI_documents collection not found. Adding documents."
     python -m fmi_chroma.git2chroma
 else
     echo "FMI_documents collection already exists. Skipping."
+fi
+
+# Add OpenModelica documents to Chroma if collection does not exist
+if ! python -m fmi_chroma.list_collections | grep -q "OpenModelica_documents"; then
+    echo "OpenModelica_documents collection not found. Adding documents."
+    python -m fmi_chroma.git2chroma --repo_url "https://github.com/OpenModelica/OpenModelica" --tag "v1.25.1" --collection_name "OpenModelica_documents"
+else
+    echo "OpenModelica_documents collection already exists. Skipping."
 fi

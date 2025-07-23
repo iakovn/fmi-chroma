@@ -10,4 +10,5 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ..:/workspaces/fmi-chroma
+      - $HOME/.ssh:/home/vscode/.ssh
     command: sleep infinity

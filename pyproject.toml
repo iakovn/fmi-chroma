@@ -26,6 +26,9 @@ dependencies = [
     "jupytext>=1.17.2",
     "mcp[cli,server]>=1.12.0",
     "pypdf2>=3.0.1",
+    "ompython>=3.6.0",
+    "fmpy>=0.3.22",
+    "matplotlib>=3.10.3",
 ]
 
 [project.urls]

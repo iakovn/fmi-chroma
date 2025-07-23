@@ -34,7 +34,7 @@
 # This example demonstrates how to:
 # 1. Export `Modelica.Fluid.Examples.HeatingSystem` as a Co-Simulation FMU using OMPython.
 # 2. Simulate the FMU using fmpy.
-# 3. Plot sensor outputs (e.g., temperature) as a function of time.
+# 3. Plot sensor outputs (e.g., rotations speed) as a function of time.
 
 # %%
 import os
@@ -87,23 +87,64 @@ else:
     print(f"FMU already exists: {fmu_filename}")
 
 # %%
-# Step 2: Simulate the FMU using fmpy
+# Step 2: Collect and print diagram information
+# Load the model for inspection
+execute_omc_command(
+    omc, f"loadModel({model_name})", f"Failed to load {model_name}"
+)
+
+# Get all components in a single call
+print(f"Fetching components for {model_name}...")
+components = (
+    execute_omc_command(
+        omc,
+        f"getComponents({model_name})",
+        f"Failed to get components for {model_name}",
+    )
+    or []
+)
+print(f"Found {len(components)} components.")
+
+# Get all connections in a single call
+print(f"Fetching connections for {model_name}...")
+connections = (
+    execute_omc_command(
+        omc,
+        f"getConnectionList({model_name})",
+        f"Failed to get connections for {model_name}",
+    )
+    or []
+)
+print(f"Found {len(connections)} connections.")
+
+print("\n--- Components ---")
+for comp in components:
+    # Record: {className, instanceName, origin, extent, rotation}
+    print(f"  - Class: {comp[1]}, Name: {comp[2]}")
+
+
+print("\n--- Connections ---")
+for conn in connections:
+    # Record: {from, to, color, lineStyle, etc.}
+    print(f"  - From: {conn[0]} To: {conn[1]}")
+
+
+# %%
+# Step 3: Simulate the FMU using fmpy
 print("Simulating the FMU ...")
 result = simulate_fmu(fmu_filename, start_time=0, stop_time=4)
 
-# Step 3: Plot results
+# Step 4: Plot results
 # List available variables
 print("Available variables:", result.dtype.names)
 
-# Example: Plot temperatures of two sensors as a function of time
+# Example: Plot rotation speed as a function of time
 plt.figure(figsize=(10, 6))
 plt.plot(result["time"], result["inertia2.w"], label="inertia2.w")
 
 plt.xlabel("Time [s]")
-plt.ylabel("Rotation speed [rad/s]")
+plt.ylabel("Temperature [K]")
 plt.title("Sensor Temperatures vs Time")
 plt.legend()
 plt.grid(True)
 plt.show()
-
-# Note: Variable names may differ depending on the FMU structure. Use the print above to inspect them.

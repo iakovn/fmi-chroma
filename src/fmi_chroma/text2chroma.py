@@ -29,7 +29,7 @@ def add_texts_from_directory(
     )
 
     # Define the file extensions to search for (lowercase for matching)
-    extensions = ["md", "txt", "adoc", "c", "h", "rst", "py"]
+    extensions = ["md", "txt", "adoc", "c", "h", "rst", "py", "mo"]
     extensions_set = {ext.lower() for ext in extensions}
 
     file_count = 0

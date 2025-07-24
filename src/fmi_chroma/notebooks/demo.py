@@ -116,11 +116,29 @@ connections = (
     or []
 )
 print(f"Found {len(connections)} connections.")
-
+# %%
 print("\n--- Components ---")
-for comp in components:
-    # Record: {className, instanceName, origin, extent, rotation}
-    print(f"  - Class: {comp[1]}, Name: {comp[2]}")
+for i, comp in enumerate(components):
+    # comp is a tuple (type,name,description, ...)
+    comp_type, comp_name = comp[0], comp[1]
+
+    # annotations are expressions that will need further processing
+    comp_annotation = execute_omc_command(
+        omc,
+        f"getNthComponentAnnotation({model_name}, {i + 1})",
+        f"Failed to get component annotation{i}",
+        parsed=False,
+    )
+    icon_annotation = execute_omc_command(
+        omc,
+        f"getIconAnnotation({comp_type})",
+        f"Failed to get component icon annotation{i}",
+        parsed=False,
+    )
+
+    print(
+        f"  - Class: {comp_type}, Name: {comp_name}, Annotation: {comp_annotation}, Icon: {icon_annotation}"
+    )
 
 
 print("\n--- Connections ---")

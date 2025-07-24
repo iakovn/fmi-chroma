@@ -7,5 +7,7 @@
     "editor.formatOnSave": true
   },
   "chat.mcp.discovery.enabled": true,
-  "github.copilot.chat.codesearch.enabled": true
+  "github.copilot.chat.codesearch.enabled": true,
+  "python.testing.pytestEnabled": true,
+  "python.analysis.inlayHints.pytestParameters": true
 }

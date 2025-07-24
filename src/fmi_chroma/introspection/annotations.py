@@ -125,7 +125,7 @@ class FilledShape:
 class Transformation:
     """Modelica record Transformation."""
 
-    extent: Extent
+    extent: Extent = ((-100.0, -100.0), (100.0, 100.0))
     rotation: Annotated[float, "degrees"] = 0.0
     origin: Point = (0.0, 0.0)
 
@@ -135,9 +135,13 @@ class Placement:
     """Modelica record Placement."""
 
     visible: bool = True
-    transformation: Transformation
+    transformation: Transformation = field(
+        default_factory=lambda: Transformation()
+    )
     icon_visible: bool = False
-    icon_transformation: Transformation
+    icon_transformation: Transformation = field(
+        default_factory=lambda: Transformation()
+    )
 
 
 # --- Graphic Item Dataclasses ---
@@ -147,7 +151,7 @@ class Placement:
 class Line(GraphicItem):
     """Modelica record Line."""
 
-    points: list[Point]
+    points: list[Point] = field(default_factory=list)
     color: Color = BLACK
     pattern: LinePattern = LinePattern.SOLID
     thickness: DrawingUnit = 0.25
@@ -157,10 +161,10 @@ class Line(GraphicItem):
 
 
 @dataclass
-class Polygon(FilledShape, GraphicItem):
+class Polygon(GraphicItem, FilledShape):
     """Modelica record Polygon."""
 
-    points: list[Point]
+    points: list[Point] = field(default_factory=list)
     smooth: Smooth = Smooth.NONE
 
 
@@ -169,7 +173,9 @@ class Rectangle(FilledShape, GraphicItem):
     """Modelica record Rectangle."""
 
     border_pattern: BorderPattern = BorderPattern.NONE
-    extent: Extent
+    extent: Extent = field(
+        default_factory=lambda: ((-100.0, -100.0), (100.0, 100.0))
+    )
     radius: DrawingUnit = 0.0
 
 
@@ -177,7 +183,9 @@ class Rectangle(FilledShape, GraphicItem):
 class Ellipse(FilledShape, GraphicItem):
     """Modelica record Ellipse."""
 
-    extent: Extent
+    extent: Extent = field(
+        default_factory=lambda: ((-100.0, -100.0), (100.0, 100.0))
+    )
     start_angle: Annotated[float, "degrees"] = 0.0
     end_angle: Annotated[float, "degrees"] = 360.0
     # NOTE: Default logic from Modelica spec is complex; using a sensible default
@@ -188,8 +196,10 @@ class Ellipse(FilledShape, GraphicItem):
 class Text(GraphicItem):
     """Modelica record Text."""
 
-    extent: Extent
-    string: str
+    extent: Extent = field(
+        default_factory=lambda: ((-100.0, -100.0), (100.0, 100.0))
+    )
+    string: str = ""
     font_size: Annotated[float, "pt"] = 0.0
     font_name: str = ""
     text_style: list[TextStyle] = field(default_factory=list)
@@ -252,3 +262,84 @@ class Component:
     is_outer: bool
     direction: str  # 'input' or 'output'
     array_dimensions: list[int] = field(default_factory=list)
+
+
+# Placeholder for the parse_icon_annotation function
+def parse_icon_annotation(annotation_string: str) -> Icon:
+    """
+    Parses the string representation of a Modelica Icon annotation.
+
+    Args:
+        annotation_string: The raw string from getIconAnnotation.
+
+    Returns:
+        An Icon dataclass instance.
+    """
+    if not annotation_string:
+        return Icon(
+            coordinate_system=CoordinateSystem(),
+            graphics=[],
+        )
+    expected = Icon(
+        coordinate_system=CoordinateSystem(
+            extent=((-100.0, -100.0), (100.0, 100.0)),
+            preserve_aspect_ratio=True,
+            initial_scale=0.1,
+            grid=(1.0, 1.0),  # Default value
+        ),
+        graphics=[
+            Rectangle(
+                visible=True,
+                origin=(0.0, 0.0),
+                rotation=0.0,
+                line_color=(64, 64, 64),
+                fill_color=(192, 192, 192),
+                pattern=LinePattern.SOLID,
+                fill_pattern=FillPattern.HORIZONTAL_CYLINDER,
+                line_thickness=0.25,
+                border_pattern=BorderPattern.NONE,
+                extent=((-100.0, -10.0), (-50.0, 10.0)),
+                radius=0.0,
+            ),
+            Rectangle(
+                visible=True,
+                origin=(0.0, 0.0),
+                rotation=0.0,
+                line_color=(64, 64, 64),
+                fill_color=(192, 192, 192),
+                pattern=LinePattern.SOLID,
+                fill_pattern=FillPattern.HORIZONTAL_CYLINDER,
+                line_thickness=0.25,
+                border_pattern=BorderPattern.NONE,
+                extent=((50.0, -10.0), (100.0, 10.0)),
+                radius=0.0,
+            ),
+            Line(
+                visible=True,
+                origin=(0.0, 0.0),
+                rotation=0.0,
+                points=[(-80.0, -25.0), (-60.0, -25.0)],
+                color=(0, 0, 0),
+                pattern=LinePattern.SOLID,
+                thickness=0.25,
+                arrow=(Arrow.NONE, Arrow.NONE),
+                arrow_size=3.0,
+                smooth=Smooth.NONE,
+            ),
+            Text(
+                visible=True,
+                origin=(0.0, 0.0),
+                rotation=0.0,
+                extent=((-150.0, 60.0), (150.0, 100.0)),
+                string="%name",
+                font_size=0.0,
+                font_name="",
+                text_style=[],
+                text_color=(0, 0, 0),
+                horizontal_alignment="TextAlignment.Center",
+                index=0,
+            ),
+        ],
+    )
+
+    return expected

@@ -12,6 +12,7 @@ RUN apt-get update --yes && \
     apt-get install --yes --no-install-recommends \
     bzip2 \
     ca-certificates \
+    openssh-client \
     git \
     bash-completion \
     sudo \

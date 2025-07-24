@@ -10,3 +10,7 @@
     jupytext --sync src/fmi_chroma/notebooks/demo.py
     jupyter nbconvert --ClearOutputPreprocessor.enabled=True --to notebook --inplace src/fmi_chroma/notebooks/demo.ipynb
 ```
+- The project is using pytest as test runner (not unittest)
+- The project uses ruff as linter
+- Always generate type definitions. The project will be checked with mypy.
+- use uv to manage dependencies.

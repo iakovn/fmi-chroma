@@ -16,20 +16,13 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "chromadb>=0.5.3",
-    "langchain-chroma>=0.2.4",
-    "langchain-community>=0.3.27",
-    "langchain-google-genai>=2.1.8",
-    "pysqlite3-binary>=0.5.4",
-    "numpy < 2.0",
-    "pypdf>=5.8.0",
-    "jupytext>=1.17.2",
-    "mcp[cli,server]>=1.12.0",
-    "pypdf2>=3.0.1",
-    "ompython>=3.6.0",
-    "fmpy>=0.3.22",
-    "matplotlib>=3.10.3",
-    "nbconvert>=7.16.6",
+    "chroma-mcp",
+    "fmpy",
+    "matplotlib",
+    "OMPython",
+    "pandas",
+    "pysqlite3-binary",
+    "lark",
 ]
 
 [project.urls]

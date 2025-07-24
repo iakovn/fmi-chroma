@@ -1,6 +1,7 @@
 """Unit tests for the annotations module."""
 
-from fmi_chroma.introspection.annotations import (
+from fmi_chroma.introspection.annotations.parser import parse_icon_annotation
+from fmi_chroma.introspection.annotations.types import (
     Arrow,
     BorderPattern,
     CoordinateSystem,
@@ -12,7 +13,6 @@ from fmi_chroma.introspection.annotations import (
     Smooth,
     Text,
     TextAlignment,
-    parse_icon_annotation,
 )
 
 

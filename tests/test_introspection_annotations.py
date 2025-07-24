@@ -11,6 +11,7 @@ from fmi_chroma.introspection.annotations import (
     Rectangle,
     Smooth,
     Text,
+    TextAlignment,
     parse_icon_annotation,
 )
 
@@ -86,7 +87,7 @@ def test_parse_icon_annotation():
                 font_name="",
                 text_style=[],
                 text_color=(0, 0, 0),
-                horizontal_alignment="TextAlignment.Center",
+                horizontal_alignment=TextAlignment.CENTER,
                 index=0,
             ),
         ],

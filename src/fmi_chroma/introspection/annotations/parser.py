@@ -13,11 +13,13 @@ from .types import (
     Icon,
     Line,
     LinePattern,
+    Placement,
     Rectangle,
     Smooth,
     Text,
     TextAlignment,
     TextStyle,
+    Transformation,
 )
 
 # --- Lark Grammar and Parser ---
@@ -199,4 +201,129 @@ def parse_icon_annotation(annotation_string: str) -> Icon | None:
         return icon_parser.parse(clean_string)
     except Exception as e:
         print(f"Failed to parse annotation with Lark: {e}")
+        return None
+
+
+PLACEMENT_GRAMMAR = r"""
+    ?start: annotations
+
+    annotations : "{" [annotation ("," annotation)*] "}"
+    placement : "Placement" "(" fields ")"
+
+    other : /(?!(Placement))[^,{}]+/   // matches any other annotation, ignored
+    annotation : placement
+              | other
+    fields : field ("," field)* [","]
+    field : "true"    -> true
+          | "false"   -> false
+          | SIGNED_NUMBER -> number
+          | "-"      -> default_value
+
+
+    %import common.SIGNED_NUMBER
+    %import common.WS
+    %ignore WS
+"""
+
+
+class PlacementTransformer(Transformer):
+    def true(self, _):
+        return True
+
+    def false(self, _):
+        return False
+
+    def number(self, n):
+        # n may be a Token or a list if the grammar is ambiguous
+        if isinstance(n, list):
+            n = n[0]
+        return float(n)
+
+    def default_value(self, _):
+        return None
+
+    def fields(self, fields):
+        # Flatten any nested lists (from ambiguous parses)
+        flat_fields = []
+        for f in fields:
+            if isinstance(f, list):
+                flat_fields.extend(f)
+            else:
+                flat_fields.append(f)
+        fields = flat_fields
+        # Remove any trailing None caused by an extra comma
+        if len(fields) > 15:
+            fields = fields[:15]
+        if len(fields) != 15:
+            raise ValueError(  # noqa: TRY003
+                f"Expected 15 fields for Placement, got {len(fields)}"
+            )
+        visible = fields[0] if fields[0] is not None else True
+        origin_x = fields[1] if fields[1] is not None else 0.0
+        origin_y = fields[2] if fields[2] is not None else 0.0
+        extent_x1 = fields[3] if fields[3] is not None else -100.0
+        extent_y1 = fields[4] if fields[4] is not None else -100.0
+        extent_x2 = fields[5] if fields[5] is not None else 100.0
+        extent_y2 = fields[6] if fields[6] is not None else 100.0
+        rotation = fields[7] if fields[7] is not None else 0.0
+
+        icon_origin_x = fields[8] if fields[8] is not None else 0.0
+        icon_origin_y = fields[9] if fields[9] is not None else 0.0
+        icon_extent_x1 = fields[10] if fields[10] is not None else -100.0
+        icon_extent_y1 = fields[11] if fields[11] is not None else -100.0
+        icon_extent_x2 = fields[12] if fields[12] is not None else 100.0
+        icon_extent_y2 = fields[13] if fields[13] is not None else 100.0
+        icon_rotation = fields[14] if fields[14] is not None else 0.0
+
+        transformation = Transformation(
+            origin=(origin_x, origin_y),
+            extent=((extent_x1, extent_y1), (extent_x2, extent_y2)),
+            rotation=rotation,
+        )
+        icon_transformation = Transformation(
+            origin=(icon_origin_x, icon_origin_y),
+            extent=(
+                (icon_extent_x1, icon_extent_y1),
+                (icon_extent_x2, icon_extent_y2),
+            ),
+            rotation=icon_rotation,
+        )
+        return {
+            "visible": visible,
+            "transformation": transformation,
+            "icon_transformation": icon_transformation,
+        }
+
+    def placement(self, children):
+        return Placement(**children[0])
+
+    def annotation(self, children):
+        if children and isinstance(children[0], Placement):
+            return children[0]
+        return None
+
+    def annotations(self, children):
+        for child in children:
+            if isinstance(child, Placement):
+                return child
+        return None
+
+
+placement_parser = Lark(
+    PLACEMENT_GRAMMAR,
+    start="annotations",
+    parser="lalr",
+    transformer=PlacementTransformer(),
+)
+
+
+def parse_placement_annotation(annotation_string: str) -> Placement | None:
+    """
+    Parses a Modelica component annotation string and returns the Placement annotation as a Placement object.
+    Returns None if not found or parsing fails.
+    """
+    try:
+        return placement_parser.parse(annotation_string)
+    except Exception as e:
+        print(f"Failed to parse Placement annotation: {e}")
         return None

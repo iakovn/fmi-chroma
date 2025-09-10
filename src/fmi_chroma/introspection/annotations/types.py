@@ -97,9 +97,9 @@ class FilledShape:
 
 @dataclass
 class Transformation:
+    origin: Point = (0.0, 0.0)
     extent: Extent = ((-100.0, -100.0), (100.0, 100.0))
     rotation: Annotated[float, "degrees"] = 0.0
-    origin: Point = (0.0, 0.0)
 
 
 @dataclass
@@ -108,7 +108,6 @@ class Placement:
     transformation: Transformation = field(
         default_factory=lambda: Transformation()
     )
-    icon_visible: bool = False
     icon_transformation: Transformation = field(
         default_factory=lambda: Transformation()
     )

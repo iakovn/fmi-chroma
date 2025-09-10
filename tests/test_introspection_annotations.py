@@ -1,6 +1,9 @@
 """Unit tests for the annotations module."""
 
-from fmi_chroma.introspection.annotations.parser import parse_icon_annotation
+from fmi_chroma.introspection.annotations.parser import (
+    parse_icon_annotation,
+    parse_placement_annotation,
+)
 from fmi_chroma.introspection.annotations.types import (
     Arrow,
     BorderPattern,
@@ -9,6 +12,7 @@ from fmi_chroma.introspection.annotations.types import (
     Icon,
     Line,
     LinePattern,
+    Placement,
     Rectangle,
     Smooth,
     Text,
@@ -94,3 +98,35 @@ def test_parse_icon_annotation():
     )
     parsed_icon = parse_icon_annotation(annotation_string)
     assert parsed_icon == expected
+
+
+def test_parse_placement_annotation():
+    s = "{Placement(true,-,-,32.0,-20.0,52.0,0.0,-,-,-,-,-,-,-,-),SomeOther(),ignoreThis=5}"
+    placement = parse_placement_annotation(s)
+    assert isinstance(placement, Placement)
+    assert placement.visible is True
+    assert placement.transformation.origin == (0.0, 0.0)
+    assert placement.transformation.extent == ((32.0, -20.0), (52.0, 0.0))
+    assert placement.transformation.rotation == 0.0
+    assert placement.icon_transformation.origin == (0.0, 0.0)
+    assert placement.icon_transformation.extent == (
+        (-100.0, -100.0),
+        (100.0, 100.0),
+    )
+    assert placement.icon_transformation.rotation == 0.0
+
+
+def test_parse_placement_annotation_defaults():
+    s = "{Placement(-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-)}"
+    placement = parse_placement_annotation(s)
+    assert isinstance(placement, Placement)
+    assert placement.visible is True
+    assert placement.transformation.origin == (0.0, 0.0)
+    assert placement.transformation.extent == ((-100.0, -100.0), (100.0, 100.0))
+    assert placement.transformation.rotation == 0.0
+    assert placement.icon_transformation.origin == (0.0, 0.0)
+    assert placement.icon_transformation.extent == (
+        (-100.0, -100.0),
+        (100.0, 100.0),
+    )
+    assert placement.icon_transformation.rotation == 0.0

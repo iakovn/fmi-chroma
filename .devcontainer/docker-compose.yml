@@ -1,8 +1,8 @@
 services:
-  chroma:
-    image: chromadb/chroma
-    volumes:
-      - ./.chroma/data:/data
+  # chroma:
+    # image: chromadb/chroma
+    # volumes:
+    #   - ./.chroma/data:/data
 
   devcontainer:
     build:

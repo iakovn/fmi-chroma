@@ -77,8 +77,11 @@ def ensure_modelica_library(omc, version="4.0.0"):
         )
         print(f"Note: {str(e).splitlines()[0]}")
     else:
-        print(f"Modelica Standard Library {version} loaded ({result}).")
-        return True
+        if result:
+            print(f"Modelica Standard Library {version} loaded ({result}).")
+            return True
+        else:
+            print(f"Modelica Standard Library {version} not found ({result}).")
 
     try:
         # Try to install the specific version using installPackage

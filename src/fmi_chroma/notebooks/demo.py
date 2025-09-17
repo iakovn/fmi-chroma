@@ -38,9 +38,19 @@
 
 # %%
 import os
+import tempfile
+from pathlib import Path
 
 import matplotlib.pyplot as plt
-from fmpy import simulate_fmu
+import pandas as pd
+from fmpy import (
+    extract as extract_fmu,
+)
+from fmpy import (
+    instantiate_fmu,
+    read_model_description,
+    simulate_fmu,
+)
 from OMPython import OMCSessionZMQ
 
 from fmi_chroma.ompython import (
@@ -65,13 +75,64 @@ fmu_filename = (
     f"/workspaces/fmi-chroma/.generated/{model_name.split('.')[-1]}.fmu"
 )
 
+# %%
+# Step 1: Load MSL and analyze the mode
+# Ensure Modelica Standard Library 4.0.0 is available
+if not ensure_modelica_library(omc, version="4.0.0"):
+    raise ModelicaLoadError()
+
+class_information = execute_omc_command(
+    omc, f"getClassInformation({model_name})"
+)
+
+print(f"Class information for {model_name}:")
+print(class_information)
+
+path_to_MSL = Path(execute_omc_command(omc, "getSourceFile(Modelica)")).parent
+
+
+# %%
+# See how things work with a small Modelica code as a string
+class_name = "SmallTest"
+model_code = f"""
+model {class_name}
+  Modelica.Blocks.Continuous.PID pid1(k=1, Ti=1, Td=0.1);
+  Modelica.Blocks.Continuous.PID pid2(k=2, Ti=2, Td=0.1);
+  parameter Real x = 0.5;
+  annotation(some="thing", other=123, __TestSpecification(p1=true, p2=2, p3="hello", p4=3.0));
+end {class_name};
+"""
+with open(f"/tmp/{class_name}.mo", "w") as f:  # noqa: S108
+    f.write(model_code)
+
+execute_omc_command(omc, f'loadFile("/tmp/{class_name}.mo")')
+# For more detailed dependency list:
+used_classes = execute_omc_command(omc, f"getUsedClassNames({class_name})")
+print(f"Used classes in {class_name}:")
+print("\n".join(used_classes))
+files = {
+    execute_omc_command(omc, f"getSourceFile({class_name})")
+    for class_name in used_classes
+}
+print("\nSource files:")
+print("\n".join(files))
+
+modifier_spec_names = execute_omc_command(
+    omc, f'getAnnotationNamedModifiers({class_name},"__TestSpecification")'
+)
+test_spec_mods = {
+    m: execute_omc_command(
+        omc,
+        f'getAnnotationModifierValue({class_name}, "__TestSpecification", "{m}")',
+    )
+    for m in modifier_spec_names
+}
+print("Modifiers in test spec:")
+print("\n".join(f"{m}={v}" for m, v in test_spec_mods.items()))
+# %%
 # Step 1: Export the Modelica model as a Co-Simulation FMU
 if not os.path.exists(fmu_filename):
     print(f"Exporting {model_name} to {fmu_filename} ...")
-
-    # Ensure Modelica Standard Library 4.0.0 is available
-    if not ensure_modelica_library(omc, version="4.0.0"):
-        raise ModelicaLoadError()
 
     # Build the FMU
     try:
@@ -93,6 +154,7 @@ execute_omc_command(
     omc, f"loadModel({model_name})", f"Failed to load {model_name}"
 )
 
+# %%
 # Get all components in a single call
 print(f"Fetching components for {model_name}...")
 components = (
@@ -166,3 +228,38 @@ plt.title("Rotation speed vs Time")
 plt.legend()
 plt.grid(True)
 plt.show()
+
+# %%
+
+# Create a temporary directory
+tmpdir = tempfile.TemporaryDirectory()
+print("Created temporary directory:", tmpdir.name)
+
+# extract fmu
+dirname = extract_fmu(fmu_filename, tmpdir.name)
+
+# %%
+
+md = read_model_description(dirname)
+mv = pd.DataFrame(vars(v) for v in md.modelVariables).set_index("name")
+
+print(f"The model contains {len(mv)} model variables")
+
+# %%
+fmu = instantiate_fmu(
+    dirname,
+    md,
+)
+
+# Perform operations within this directory
+# %%
+fmu.instantiate()
+
+# %%
+mv.at["inertia1.J", "valueReference"]
+
+# %%
+fmu.setReal([mv.at["inertia1.J", "valueReference"]], [2.0])
+# %%
+# Manually clean up the directory
+tmpdir.cleanup()

@@ -6,7 +6,12 @@
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": true
   },
-  "chat.mcp.discovery.enabled": true,
+  "chat.mcp.discovery.enabled": {
+    "claude-desktop": true,
+    "windsurf": true,
+    "cursor-global": true,
+    "cursor-workspace": true
+  },
   "github.copilot.chat.codesearch.enabled": true,
   "python.testing.pytestEnabled": true,
   "python.analysis.inlayHints.pytestParameters": true

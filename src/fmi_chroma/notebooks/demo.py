@@ -53,6 +53,7 @@ from fmpy import (
 )
 from OMPython import OMCSessionZMQ
 
+import fmi_chroma
 from fmi_chroma.ompython import (
     FMUExportError,
     ModelicaLoadError,
@@ -93,42 +94,113 @@ path_to_MSL = Path(execute_omc_command(omc, "getSourceFile(Modelica)")).parent
 
 # %%
 # See how things work with a small Modelica code as a string
-class_name = "SmallTest"
+package_name = "SmallTest"
 model_code = f"""
-model {class_name}
+package {package_name}
+model PID2
   Modelica.Blocks.Continuous.PID pid1(k=1, Ti=1, Td=0.1);
   Modelica.Blocks.Continuous.PID pid2(k=2, Ti=2, Td=0.1);
   parameter Real x = 0.5;
   annotation(some="thing", other=123, __TestSpecification(p1=true, p2=2, p3="hello", p4=3.0));
-end {class_name};
+end PID2;
+model TestPID
+    extends Modelica.Blocks.Examples.PID_Controller;
+end TestPID;
+end {package_name};
 """
-with open(f"/tmp/{class_name}.mo", "w") as f:  # noqa: S108
+
+generated_path = Path(f"/tmp/{package_name}.mo")  # noqa: S108
+with open(generated_path, "w") as f:
     f.write(model_code)
 
-execute_omc_command(omc, f'loadFile("/tmp/{class_name}.mo")')
-# For more detailed dependency list:
-used_classes = execute_omc_command(omc, f"getUsedClassNames({class_name})")
-print(f"Used classes in {class_name}:")
-print("\n".join(used_classes))
-files = {
-    execute_omc_command(omc, f"getSourceFile({class_name})")
-    for class_name in used_classes
-}
-print("\nSource files:")
-print("\n".join(files))
-
-modifier_spec_names = execute_omc_command(
-    omc, f'getAnnotationNamedModifiers({class_name},"__TestSpecification")'
+test_lib_path = (
+    Path(fmi_chroma.__file__).parent / "MyTestLibrary" / "package.mo"
 )
-test_spec_mods = {
-    m: execute_omc_command(
-        omc,
-        f'getAnnotationModifierValue({class_name}, "__TestSpecification", "{m}")',
+if not test_lib_path.exists():
+    test_lib_path = (
+        Path(fmi_chroma.__file__).parent.parent.parent
+        / "tests"
+        / "MyTestLibrary"
+        / "package.mo"
     )
-    for m in modifier_spec_names
-}
-print("Modifiers in test spec:")
-print("\n".join(f"{m}={v}" for m, v in test_spec_mods.items()))
+libpath = (
+    omc.sendExpression("getModelicaPath()")
+    + os.pathsep
+    + str(test_lib_path.parent.parent)
+    + os.pathsep
+    + str(generated_path.parent)
+)
+execute_omc_command(
+    omc,
+    f'setModelicaPath("{libpath}")',
+    "Failed to set Modelica path",
+)
+
+for load_library_path in [test_lib_path, generated_path]:
+    if not execute_omc_command(omc, f'loadFile("{load_library_path!s}")'):
+        print(f"Failed to load library from {load_library_path!s}")
+        err = omc.sendExpression("getErrorString()")
+        print(err)
+        continue
+    package = Path(load_library_path).stem
+    if package == "package":
+        package = Path(load_library_path).parent.name
+    print(f"\nClass information for {package}:")
+    class_info = execute_omc_command(omc, f"getClassInformation({package})")
+    print(class_info)
+
+    models_in_package = execute_omc_command(
+        omc, f"getClassNames({package}, true, true)"
+    )
+
+    print(f"Models in {package}: {models_in_package}")
+
+    for class_name in models_in_package:
+        print(f"\nLoading {class_name}:")
+        if not execute_omc_command(omc, f"loadModel({class_name})"):
+            err = omc.sendExpression("getErrorString()")
+            print(err)
+            continue
+        if class_name == package:
+            continue  # Skip the package itself
+        print(f"\nClass information for {class_name}:")
+        class_info = execute_omc_command(
+            omc, f"getClassInformation({class_name})"
+        )
+        print(class_info)
+        print(
+            execute_omc_command(omc, f"getClassNames({class_name}, true, true)")
+        )
+        # For more detailed dependency list:
+        used_classes = execute_omc_command(
+            omc, f"getUsedClassNames({class_name})"
+        )
+        print(f"Used classes in {class_name}:")
+        print(", ".join(used_classes))
+        files = {
+            execute_omc_command(omc, f"getSourceFile({class_name})")
+            for class_name in used_classes
+        }
+        print("\nSource files:")
+        print(", ".join(files))
+
+        try:
+            modifier_spec_names = execute_omc_command(
+                omc,
+                f'getAnnotationNamedModifiers({class_name},"__TestSpecification")',
+            )
+        except RuntimeError:  # If annotation does not exist
+            print(f"No __TestSpecification annotation in {class_name}")
+            continue
+        test_spec_mods = {
+            m: execute_omc_command(
+                omc,
+                f'getAnnotationModifierValue({class_name}, "__TestSpecification", "{m}")',
+            )
+            for m in modifier_spec_names
+        }
+        print("Modifiers in test spec:")
+        print("\n".join(f"{m}={v}" for m, v in test_spec_mods.items()))
 # %%
 # Step 1: Export the Modelica model as a Co-Simulation FMU
 if not os.path.exists(fmu_filename):
